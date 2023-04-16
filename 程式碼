@@ -1,0 +1,65 @@
+#import modules
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+#import dataset
+df = pd.read_csv("train.csv")
+
+#observingdataset
+df.head()
+
+#Remove the columns model will not use
+df.drop(['PassengerId'],axis=1,inplace=True)
+df.drop(['Name'],axis=1,inplace=True)
+df.drop(['Cabin'],axis=1,inplace=True)
+
+
+df[['VIP', 'CryoSleep', 'FoodCourt', 'ShoppingMall', 'Spa', 'VRDeck']] = df[['VIP', 'CryoSleep', 'FoodCourt', 'ShoppingMall', 'Spa', 'VRDeck']].fillna(value=0)
+df['VIP'] = df['VIP'].astype(bool)
+df['CryoSleep'] = df['CryoSleep'].astype(bool)
+df['HomePlanet'].fillna(df['HomePlanet'].value_counts().idxmax(),inplace=True)
+
+print(df['Age'].max)
+age = df['Age'].value_counts()
+sum = 0
+people = 0
+for i in age.index:
+    people += age[i]
+    sum += i*age[i]
+sum //= people
+df['Age'].fillna(sum,inplace=True)
+
+age = df['RoomService'].value_counts()
+df.sum()
+sum = 0
+people = 0
+for i in age.index:
+    people += age[i]
+    sum += i*age[i]
+sum //= people
+df['RoomService'].fillna(sum,inplace=True)
+
+df['Destination'].fillna(df['Destination'].value_counts().idxmax(),inplace=True)
+df = pd.get_dummies(data=df,columns=['HomePlanet','Destination'])
+
+X = df.drop(['Transported'],axis=1)
+y = df['Transported']
+
+
+
+from sklearn.model_selection import train_test_split
+a = random.randint(0,999)
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.1,random_state=43)
+
+from sklearn.linear_model import LogisticRegression
+lr=LogisticRegression(max_iter=400)
+lr.fit(X_train,y_train)
+predictions=lr.predict(X_test)
+
+from sklearn.metrics import accuracy_score
+print(accuracy_score(y_test,predictions))
+
+import joblib
+joblib.dump(lr, 'module.pkl', compress=3)
